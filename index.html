@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gantt-Projektplaner</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            color: #334155;
+            margin: 0;
+            background: #f1f5f9;
+        }
+
+        header {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: bold;
+            border-bottom: 2px solid #1e293b;
+            letter-spacing: 0.5px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: .66fr 0.33fr;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 16px;
+            box-shadow: none;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #1e293b;
+            margin-top: 0;
+            margin-bottom: 14px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            font-size: 11px;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 5px;
+            font-family: inherit;
+            font-size: 12px;
+            border: 1px solid #94a3b8;
+            background: #fff;
+            color: #000;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: 1px solid #2563eb;
+        }
+        
+        table input
+        {
+            min-width: 90%;
+            font-size: large;
+        }
+
+        .checkbox-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #475569;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #334155;
+            padding: 6px;
+            text-align: left;
+        }
+
+        td {
+            border: 1px solid #cbd5e1;
+            padding: 4px;
+            background: #ffffff;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        button {
+            padding: 5px 10px;
+            font-family: inherit;
+            font-size: 12px;
+            background: #f1f5f9;
+            border: 1px solid #94a3b8;
+            color: #1e293b;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        button:hover {
+            background: #e2e8f0;
+            border-color: #64748b;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #1d4ed8;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1e40af;
+        }
+
+        .action-btn {
+            padding: 2px 6px;
+            font-size: 11px;
+        }
+
+        #Out {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 16px;
+            margin: 0 16px 80px 16px;
+            overflow-x: auto;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e293b;
+            border-top: 2px solid #0f172a;
+            padding: 10px 16px;
+            box-sizing: border-box;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+            z-index: 9999;
+        }
+
+        footer button {
+            background: #334155;
+            color: #f8fafc;
+            border-color: #475569;
+        }
+
+        footer button:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>Gantt-Projektpaner</header>
+
+    <div class="container">
+
+        <div class="panel">
+            <h3 class="panel-title">Projektkonfiguration</h3>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>Projekttitel</label>
+                    <input id="Titel" value="Projektplan" />
+                </div>
+                <div class="form-group">
+                    <label>Projektstart</label>
+                    <input type="date" id="ProjektStart" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Feiertage / Schließtage (dd.mm.yyyy, Komma-getrennt)</label>
+                <input id="Feiertage" placeholder="01.01.2026, 01.05.2026, 25.12.2026" />
+            </div>
+
+            <div
+                style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; margin-top: 12px; display: flex; flex-wrap: wrap; gap: 15px;">
+                <div class="form-group" style="margin: 0;">
+                    <label>Diagramm-Skalierung</label>
+                    <select id="Scale" style="width: 150px;">
+                        <option value="daily1">Täglich (Kompakt)</option>
+                        <option value="daily2" selected>Täglich (Standard)</option>
+                        <option value="daily4">Täglich (Detailliert)</option>
+                        <option value="weekly">Wöchentlich</option>
+                        <option value="monthly">Monatlich</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end; padding-bottom: 2px;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="HideWeekends" checked>
+                        <label for="HideWeekends" style="display:inline; cursor:pointer;">Wochenenden schließen</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="ShowToday">
+                        <label for="ShowToday" style="display:inline; cursor:pointer;">Heute-Linie anzeigen</label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto; margin-top: 15px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aufgabenbezeichnung</th>
+                            <th style="width: 95px;">Startdatum</th>
+                            <th style="width: 95px;">Enddatum</th>
+                            <th style="width: 110px;" title="Geben Sie exakt den Namen der Vorgängeraufgabe ein">
+                                Abhängig von</th>
+                            <th style="width: 45px;">Farbe</th>
+                            <th style="width: 50px; text-align: center;">Meilenst.</th>
+                            <th style="width: 75px; text-align: center;">Optionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="Tasks"></tbody>
+                </table>
+            </div>
+            <button class="btn-primary" onclick="AddRow()" style="width: 100%; margin-top: 10px;">+ Zeile
+                hinzufügen</button>
+        </div>
+
+        <div class="panel" style="display:flex; flex-direction:column;">
+            <h3 class="panel-title">Generierter PlantUML Quelltext</h3>
+            <textarea id="Uml"
+                style="flex:1; font-family: monospace; font-size: 11px; background: #f8fafc; color: #334155;"
+                readonly></textarea>
+        </div>
+
+    </div>
+
+    <header style="background: #334155; border-bottom: none; font-size: 13px;">Diagramm</header>
+    <div id="Out"></div>
+
+    <footer>
+        <button onclick="ExportSvg()">System-Export (.SVG)</button>
+        <button onclick="ExportTable()">Daten kopieren (Zwischenablage)</button>
+        <button onclick="ImportTable()">Daten einfügen (Aus Zwischenablage)</button>
+
+        <div style="margin-left:auto; color:#94a3b8; font-size:11px; display:flex; align-items:center; gap:6px;">
+            <span><a style="color: lightblue;" href="https://plantuml.com">© PlantUML used for rendering</a>; with minor modifications</span>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { render, renderToString } from "./plantuml.js";
+
+        const Tasks = document.getElementById("Tasks");
+        const Uml = document.getElementById("Uml");
+        const StorageKey = "GanttSTORAGE";
+
+        /* ---------------- EXPORT & IMPORT UTILITIES ---------------- */
+
+        async function ExportTable()
+        {
+            const rows = document.querySelectorAll("#Tasks tr");
+            let lines = [];
+
+            const titel = document.getElementById("Titel").value || "";
+            const projektStart = ToGermanDate(document.getElementById("ProjektStart").value);
+            const feiertage = document.getElementById("Feiertage").value || "";
+
+            lines.push(["Titel", titel].join("\t"));
+            lines.push(["ProjektStart", projektStart].join("\t"));
+            lines.push(["Feiertage", feiertage].join("\t"));
+            lines.push("");
+
+            rows.forEach(r =>
+            {
+                const name = r.querySelector(".Name").value || "";
+                const start = ToGermanDate(r.querySelector(".Start").value);
+                const end = ToGermanDate(r.querySelector(".End").value);
+                const dependsOn = r.querySelector(".DependsOn").value || "";
+                const color = r.querySelector(".Color").value || "";
+                const isMilestone = r.querySelector(".IsMilestone").checked;
+                const milestoneText = isMilestone ? "Meilenstein" : "";
+
+                lines.push([name, start, end, dependsOn, color, milestoneText].join("\t"));
+            });
+
+            await navigator.clipboard.writeText(lines.join("\n"));
+            alert("Projektdaten in die Zwischenablage exportiert.");
+        }
+
+        async function ImportTable()
+        {
+            const text = await navigator.clipboard.readText();
+            if (!text) return;
+
+            const lines = text.split(/\r\n|\n|\r/).filter(x => x.trim().length > 0);
+            document.getElementById("Tasks").innerHTML = "";
+
+            lines.forEach(line =>
+            {
+                const cols = line.split("\t");
+
+                if (cols[0] === "Titel")
+                {
+                    document.getElementById("Titel").value = cols[1] || "";
+                    return;
+                }
+                if (cols[0] === "ProjektStart")
+                {
+                    document.getElementById("ProjektStart").value = ToIsoDate(cols[1] || "");
+                    return;
+                }
+                if (cols[0] === "Feiertage")
+                {
+                    document.getElementById("Feiertage").value = cols[1] || "";
+                    return;
+                }
+
+                if (cols.length >= 6)
+                {
+                    const name = cols[0];
+                    const startIso = ToIsoDate(cols[1]);
+                    const endIso = ToIsoDate(cols[2]);
+                    const dependsOn = cols[3];
+                    const color = cols[4];
+                    const isMilestone = cols[5] === "Meilenstein";
+
+                    AddRow(name, startIso, endIso, color, isMilestone, dependsOn);
+                }
+            });
+            Update();
+        }
+        window.ExportTable = ExportTable;
+        window.ImportTable = ImportTable;
+
+        function ToGermanDate(iso)
+        {
+            if (!iso) return "";
+            const parts = iso.split("-");
+            if (parts.length !== 3) return "";
+            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+
+        function ToIsoDate(german)
+        {
+            if (!german) return "";
+            const parts = german.split(".");
+            if (parts.length !== 3) return "";
+            return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+        }
+
+        /* ---------------- INTERACTIVE DOM MANIPULATION ---------------- */
+
+        function ToggleMilestone(cb)
+        {
+            const row = cb.closest("tr");
+            const endInput = row.querySelector(".End");
+            if (cb.checked)
+            {
+                endInput.disabled = true;
+                endInput.style.background = "#e2e8f0";
+            } else
+            {
+                endInput.disabled = false;
+                endInput.style.background = "#ffffff";
+            }
+        }
+        window.ToggleMilestone = ToggleMilestone;
+
+        function MoveUp(btn)
+        {
+            const row = btn.closest("tr");
+            if (row.previousElementSibling)
+            {
+                row.parentNode.insertBefore(row, row.previousElementSibling);
+                Update();
+            }
+        }
+        window.MoveUp = MoveUp;
+
+        function MoveDown(btn)
+        {
+            const row = btn.closest("tr");
+            if (row.nextElementSibling)
+            {
+                row.parentNode.insertBefore(row.nextElementSibling, row);
+                Update();
+            }
+        }
+        window.MoveDown = MoveDown;
+
+        function AddRow(name = "", start = "", end = "", color = "#3b82f6", isMilestone = false, dependsOn = "")
+        {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+        <td><input class="Name" value="${name}" placeholder="z.B. Task A"></td>
+        <td><input class="Start" type="date" value="${start}"></td>
+        <td><input class="End" type="date" value="${end}" ${isMilestone ? "disabled style='background:#e2e8f0;'" : ""}></td>
+        <td><input class="DependsOn" value="${dependsOn}" placeholder="Vorgänger-Task"></td>
+        <td style="text-align:center;"><input class="Color" type="color" value="${color}" style="width:28px;height:20px;padding:0;border:0;cursor:pointer;"></td>
+        <td style="text-align:center;">
+            <input type="checkbox" class="IsMilestone" ${isMilestone ? "checked" : ""} onchange="ToggleMilestone(this); Update()">
+        </td>
+        <td style="text-align:center;">
+            <div style="display:flex; gap: 2px; justify-content:center;">
+                <button class="action-btn" title="Nach oben verschieben" onclick="MoveUp(this)">↑</button>
+                <button class="action-btn" title="Nach unten verschieben" onclick="MoveDown(this)">↓</button>
+                <button class="action-btn"
+                        title="Zeile löschen"
+                        onclick="if(!confirm('Eintrag wirklich entfernen?')) return; this.closest('tr').remove(); Update();"
+                        style="color:#b91c1c; font-weight:bold;">
+                    ✕
+                </button>
+            </div>
+        </td>
+    `;
+            Tasks.appendChild(tr);
+        }
+
+        /* ---------------- COMPILER ENGINE (UML BUILDER) ---------------- */
+
+        function ParseHoliday(input)
+        {
+            const parts = input.trim().split(".");
+            if (parts.length !== 3) return null;
+            return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+        }
+
+        function Holidays()
+        {
+            return (document.getElementById("Feiertage").value || "")
+                .split(",")
+                .map(x => ParseHoliday(x))
+                .filter(Boolean);
+        }
+
+        function BuildUml()
+        {
+            const startInput = document.getElementById("ProjektStart").value;
+            const title = document.getElementById("Titel").value || "Projektstrukturplan";
+            const scale = document.getElementById("Scale").value;
+            const hideWeekends = document.getElementById("HideWeekends").checked;
+            const showToday = document.getElementById("ShowToday").checked;
+
+            if (!startInput) return "@startgantt\n@endgantt";
+
+            let uml = "@startgantt\n\n";
+
+            uml += `
+<style>
+ganttDiagram {
+    milestone {
+        FontColor #0f172a
+        FontSize 12
+        FontStyle bold
+        BackGroundColor #0f172a
+        LineColor #0f172a
+    }
+    task {
+        Padding 4
+        LineColor #475569
+    }
+    separator {
+        FontSize 14
+        FontStyle bold
+    }
+}
+</style>
+skinparam backgroundColor white
+hide footbox
+language de
+`;
+
+            if (scale === "daily1") uml += "projectscale daily zoom 1\n";
+            else if (scale === "daily2") uml += "projectscale daily zoom 2\n";
+            else if (scale === "daily4") uml += "projectscale daily zoom 4\n";
+            else if (scale === "weekly") uml += "projectscale weekly zoom 2\n";
+            else if (scale === "monthly") uml += "projectscale monthly zoom 4\n";
+
+            if (hideWeekends)
+            {
+                uml += "saturday are closed\nsunday are closed\n";
+            }
+
+
+            Holidays().forEach(h =>
+            {
+                uml += h + " is closed\n";
+            });
+
+            if (showToday)
+            {
+                const todayStr = new Date().toISOString().split('T')[0];
+                uml += `${todayStr} is colored in #efe94455\n`;
+            }
+
+            uml += `\ntitle ${title}\nProject starts ${startInput}\n\n`;
+
+            const rows = document.querySelectorAll("#Tasks tr");
+
+            rows.forEach(r =>
+            {
+                const name = r.querySelector(".Name").value || "Unbenannt";
+                const isMilestone = r.querySelector(".IsMilestone").checked;
+                const start = r.querySelector(".Start").value;
+                const end = r.querySelector(".End").value;
+                const dependsOn = r.querySelector(".DependsOn").value.trim();
+                const color = r.querySelector(".Color").value || "#3b82f6";
+
+                if (isMilestone)
+                {
+                    if (dependsOn)
+                    {
+                        uml += `[${name}] happens at [${dependsOn}]'s end and is colored in ${color}\n`;
+                    } else if (start)
+                    {
+                        uml += `[${name}] happens at ${start} and is colored in ${color}\n`;
+                    }
+                } else
+                {
+                    let syntax = "";
+                    if (dependsOn)
+                    {
+                        syntax = `starts at [${dependsOn}]'s end`;
+                        if (end) syntax += ` and ends ${end}`;
+                    } else
+                    {
+                        if (!start || !end) return;
+                        syntax = `starts ${start} and ends ${end}`;
+                    }
+                    uml += `[${name}] ${syntax} and is colored in ${color}\n`;
+                }
+            });
+
+            uml += "\n@endgantt";
+            return uml;
+        }
+
+        /* ---------------- TIMING & SVG POST-RENDER MODIFICATIONS ---------------- */
+
+        function GetIsoWeek(date)
+        {
+            const tempDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = tempDate.getUTCDay() || 7;
+            tempDate.setUTCDate(tempDate.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+            return Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function InjectWeekNumbersBackgroundBands()
+        {
+            const svg = document.querySelector("#Out svg");
+            if (!svg) return;
+
+            const startInput = document.getElementById("ProjektStart").value;
+            if (!startInput) return;
+
+            const startDate = new Date(startInput);
+            const gridLines = Array.from(svg.querySelectorAll("line"));
+
+            const verticalLines = gridLines
+                .filter(l => Math.abs(parseFloat(l.getAttribute("x1")) - parseFloat(l.getAttribute("x2"))) < 0.5)
+                .sort((a, b) => parseFloat(a.getAttribute("x1")) - parseFloat(b.getAttribute("x1")));
+
+            if (verticalLines.length < 2) return;
+
+            const topY = Math.min(...gridLines.map(l => parseFloat(l.getAttribute("y1") || 0)));
+            const maxY = Math.max(...gridLines.map(l => parseFloat(l.getAttribute("y2") || 0)));
+            const height = maxY - topY;
+
+            const columns = verticalLines.slice(5).map(l => parseFloat(l.getAttribute("x1")));
+
+            const weekMap = new Map();
+
+            for (let i = 0; i < columns.length - 1; i++)
+            {
+                const xStart = columns[i];
+                const xEnd = columns[i + 1];
+
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                const week = GetIsoWeek(date);
+
+                if (!weekMap.has(week))
+                {
+                    weekMap.set(week, { XStart: xStart, XEnd: xEnd });
+                } else
+                {
+                    const w = weekMap.get(week);
+                    w.XStart = Math.min(w.XStart, xStart);
+                    w.XEnd = Math.max(w.XEnd, xEnd);
+                }
+            }
+
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            let index = 0;
+
+            weekMap.forEach((value, week) =>
+            {
+                let x = value.XStart;
+                let width = value.XEnd - value.XStart;
+
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", x);
+                rect.setAttribute("y", topY);
+                rect.setAttribute("width", width);
+                rect.setAttribute("height", height);
+                rect.setAttribute("fill", index % 2 === 0 ? "#00000015" : "#00000000");
+                group.appendChild(rect);
+                index++;
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", x + width/2);
+                text.setAttribute("y", topY+10);
+                text.setAttribute("font-size", "10");
+                text.setAttribute("font-weight", "bold");
+                text.setAttribute("font-family", "Arial, sans-serif");
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("fill", "#475569");
+                text.textContent = "KW " + week;
+                group.appendChild(text);
+            });
+
+            svg.prepend(group);
+        }
+
+        function InjectMoveMonthLabelsUp()
+        {
+            const SvgRoot = document.getElementById("Out");
+            if (!SvgRoot) return;
+
+            const TextElements = SvgRoot.querySelectorAll("text");
+            const MonthRegex = /(Januar|Februar|März|Maerz|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)/i;
+
+            TextElements.forEach(function (TextElement)
+            {
+                const TextContent = TextElement.textContent || "";
+
+                if (MonthRegex.test(TextContent))
+                {
+                    const CurrentY = parseFloat(TextElement.getAttribute("y"));
+
+                    if (!isNaN(CurrentY))
+                    {
+                        TextElement.setAttribute("y", (CurrentY - 10).toString());
+                    }
+                }
+            });
+        }
+
+        function Update()
+        {
+            Save();
+            const uml = BuildUml();
+            Uml.value = uml;
+
+            renderToString(uml.split(/\r\n|\r|\n/), (svg) => {
+                
+                document.getElementById("Out").innerHTML = svg;
+
+                const scale = document.getElementById("Scale").value;
+                if (scale.startsWith("daily"))
+                {
+                    InjectWeekNumbersBackgroundBands();
+                    InjectMoveMonthLabelsUp();
+                }
+                
+            },
+            (error) => {
+                document.getElementById("Out").innerHTML = error;
+            });
+            
+        }
+
+        /* ---------------- STATE RETENTION & PERSISTENCE ---------------- */
+
+        function ExportSvg()
+        {
+            const content = document.getElementById("Out").innerHTML;
+            const blob = new Blob([content], { type: "image/svg+xml" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Gantt_Kernsystem_Plan.svg";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function Save()
+        {
+            const rows = document.querySelectorAll("#Tasks tr");
+            const tasks = Array.from(rows).map(r => ({
+                Name: r.querySelector(".Name").value,
+                Start: r.querySelector(".Start").value,
+                End: r.querySelector(".End").value,
+                DependsOn: r.querySelector(".DependsOn").value,
+                Color: r.querySelector(".Color").value,
+                IsMilestone: r.querySelector(".IsMilestone").checked
+            }));
+
+            const state = {
+                Titel: document.getElementById("Titel").value,
+                ProjektStart: document.getElementById("ProjektStart").value,
+                Feiertage: document.getElementById("Feiertage").value,
+                Scale: document.getElementById("Scale").value,
+                HideWeekends: document.getElementById("HideWeekends").checked,
+                ShowToday: document.getElementById("ShowToday").checked,
+                Tasks: tasks
+            };
+
+            localStorage.setItem(StorageKey, JSON.stringify(state));
+        }
+
+        function Load()
+        {
+            const raw = localStorage.getItem(StorageKey);
+            if (!raw) return;
+
+            const s = JSON.parse(raw);
+            document.getElementById("Titel").value = s.Titel || "";
+            document.getElementById("ProjektStart").value = s.ProjektStart || "";
+            document.getElementById("Feiertage").value = s.Feiertage || "";
+            if (s.Scale) document.getElementById("Scale").value = s.Scale;
+            if (s.HideWeekends !== undefined) document.getElementById("HideWeekends").checked = s.HideWeekends;
+            if (s.ShowToday !== undefined) document.getElementById("ShowToday").checked = s.ShowToday;
+
+            Tasks.innerHTML = "";
+
+            (s.Tasks || []).forEach(t =>
+            {
+                AddRow(t.Name, t.Start, t.End, t.Color, t.IsMilestone, t.DependsOn || "");
+            });
+
+        }
+
+        /* ---------------- CORE ENGINE RUNTIME INITIALIZER ---------------- */
+
+        window.AddRow = AddRow;
+        window.Update = Update;
+        window.ExportSvg = ExportSvg;
+
+        document.addEventListener("input", Update);
+        document.addEventListener("change", Update);
+
+        Load();
+
+        if (Tasks.children.length === 0)
+        {
+            AddRow();
+        }
+
+        Update();
+    </script>
+
+    <script src="viz-global.js"></script>
+
+</body>
+
+</html>
