@@ -1,90 +1,91 @@
 # MyPlantUMLGanttExtension
 
-A web-based Gantt project planner that generates **PlantUML** diagrams with advanced scheduling features.
+Ein webbasierter Gantt-Projektplaner, der **PlantUML**-Diagramme mit erweiterten Planungsfunktionen generiert.
 
-## Overview
+**[English Version →](README-EN.md)**
 
-This tool provides an interactive interface to create professional Gantt diagrams without writing PlantUML syntax directly. It's built as a single HTML file with embedded JavaScript, offering real-time diagram rendering and data persistence.
+## Überblick
 
-**Key Features:**
-- 📊 **Real-time Gantt Chart Generation** – See your project timeline instantly as you build it
-- 🎨 **Customizable Styling** – Color-code tasks, adjust zoom levels, hide weekends
-- 📅 **Holiday & Closure Support** – Mark non-working days automatically
-- 🔗 **Task Dependencies** – Link tasks sequentially with automatic date calculations
-- 🎯 **Milestone Support** – Mark key project events
-- 💾 **Data Persistence** – Browser storage saves your project state
-- 📤 **Export/Import** – Clipboard integration for easy data sharing
-- 🖼️ **SVG Export** – Download diagrams as scalable vector graphics
+Dieses Tool bietet eine interaktive Schnittstelle zum Erstellen professioneller Gantt-Diagramme, ohne PlantUML-Syntax direkt zu schreiben. Es wird als einzelne HTML-Datei mit eingebettetem JavaScript bereitgestellt und bietet Echtzeit-Diagrammrendering und Datenpersistenz.
 
-## How It Works
+**Hauptfunktionen:**
+- 📊 **Echtzeit-Gantt-Diagramm-Generierung** – Sehen Sie Ihren Projektplan sofort, während Sie ihn erstellen
+- 🎨 **Anpassbare Gestaltung** – Farbcodierte Aufgaben, verstellbare Zoomstufen, Wochenenden ausblenden
+- 📅 **Feiertags- und Schließtags-Unterstützung** – Markieren Sie automatisch arbeitsfrei Tage
+- 🔗 **Aufgabenabhängigkeiten** – Verknüpfen Sie Aufgaben sequenziell mit automatischen Datumsberechnungen
+- 🎯 **Meilenstein-Unterstützung** – Markieren Sie wichtige Projektereignisse
+- 💾 **Datenpersistenz** – Browser-Speicher speichert Ihren Projektzustand
+- 📤 **Exportieren/Importieren** – Zwischenablagen-Integration für einfaches Datensharing
+- 🖼️ **SVG-Export** – Laden Sie Diagramme als skalierbare Vektorgrafiken herunter
 
-1. **Configure Your Project**
-   - Set project title and start date
-   - Define holidays/closure dates
-   - Choose diagram scale (daily, weekly, monthly)
+## So funktioniert es
 
-2. **Add Tasks**
-   - Task name, start/end dates
-   - Link tasks via dependencies
-   - Assign colors and milestone markers
-   - Reorder with up/down buttons
+1. **Konfigurieren Sie Ihr Projekt**
+   - Legen Sie Projekttitel und Startdatum fest
+   - Definieren Sie Feiertage/Schließtage
+   - Wählen Sie die Diagramm-Skalierung (täglich, wöchentlich, monatlich)
 
-3. **Generate & Export**
-   - UML source code updates live
-   - Diagram renders automatically
-   - Export as SVG or copy data to clipboard
+2. **Fügen Sie Aufgaben hinzu**
+   - Aufgabenname, Start-/Enddatum
+   - Verknüpfen Sie Aufgaben über Abhängigkeiten
+   - Weisen Sie Farben und Meilenstein-Marker zu
+   - Sortieren Sie mit Hoch-/Runter-Schaltflächen
 
-## Supported Scales
+3. **Generieren und Exportieren**
+   - UML-Quellcode aktualisiert sich live
+   - Diagramm wird automatisch gerendert
+   - Exportieren Sie als SVG oder kopieren Sie Daten in die Zwischenablage
 
-- **Daily (Compact)** – 1x zoom, compact view
-- **Daily (Standard)** – 2x zoom, default detail level
-- **Daily (Detailed)** – 4x zoom, maximum granularity
-- **Weekly** – 2x zoom, week-by-week overview
-- **Monthly** – 4x zoom, high-level roadmap
+## Unterstützte Skalierungen
 
-## Technical Details
+- **Täglich (Kompakt)** – 1x Zoom, kompakte Ansicht
+- **Täglich (Standard)** – 2x Zoom, Standard-Detailstufe
+- **Täglich (Detailliert)** – 4x Zoom, maximale Granularität
+- **Wöchentlich** – 2x Zoom, Wochenübersicht
+- **Monatlich** – 4x Zoom, Übersichts-Roadmap
 
-- **Frontend:** Vanilla JavaScript (ES6 modules)
-- **Rendering:** PlantUML via `plantuml.js` module
-- **Styling:** CSS3 with responsive grid layout
-- **Storage:** Browser LocalStorage for data retention
-- **Language:** German UI labels (easily customizable)
+## Technische Details
 
-## File Structure
+- **Frontend:** Vanilla JavaScript (ES6 Module)
+- **Rendering:** PlantUML via `plantuml.js` Modul
+- **Styling:** CSS3 mit responsivem Grid-Layout
+- **Speicher:** Browser LocalStorage für Datenwiedervergabe
+- **Sprache:** Deutsche UI-Labels (leicht anpassbar)
+
+## Dateistruktur
 
 ```
 MyPlantUMLGanttExtension/
-├── index.html          # Main application
-├── plantuml.js         # PlantUML rendering engine
-├── viz-global.js       # Visualization library
-└── README.md           # This file
+├── index.html          # Hauptanwendung
+├── plantuml.js         # PlantUML Rendering-Engine
+├── viz-global.js       # Visualisierungsbibliothek
+├── README.md           # Diese Datei (Deutsch)
+└── README-EN.md        # English Version
 ```
 
-## Usage
+## Verwendung
 
-1. Open `index.html` in a modern web browser
-2. Fill in project details in the left panel
-3. Add tasks and configure dependencies
-4. View the generated Gantt chart in real-time
-5. Export as SVG or clipboard data
+1. Öffnen Sie `index.html` in einem modernen Webbrowser
+2. Füllen Sie die Projektdetails im linken Bereich aus
+3. Fügen Sie Aufgaben hinzu und konfigurieren Sie Abhängigkeiten
+4. Sehen Sie das generierte Gantt-Diagramm in Echtzeit
+5. Exportieren Sie als SVG oder kopieren Sie Daten in die Zwischenablage
 
-### Date Format
+### Datumsformat
 
-- **Input:** ISO format (YYYY-MM-DD) via date picker
-- **Display:** German format (DD.MM.YYYY)
-- **Holidays:** Comma-separated DD.MM.YYYY list
+- **Eingabe:** ISO-Format (YYYY-MM-DD) via Datepicker
+- **Anzeige:** Deutsches Format (DD.MM.YYYY)
+- **Feiertage:** Komma-getrennte DD.MM.YYYY-Liste
 
-## Credits
+## Mitwirkende und Lizenz
 
-This project uses **PlantUML** for diagram rendering:
-- **PlantUML Official:** [plantuml.com](https://plantuml.com)
-- PlantUML is released under the **GPL v3 license**
-- This extension applies minor modifications to integrate with the web interface
+Dieses Projekt verwendet **PlantUML** für die Diagrammrenderei:
+- **PlantUML Projekt:** [plantuml.com](https://plantuml.com)
+- PlantUML wird unter der **GPL v3 Lizenz** veröffentlicht
+- Diese Erweiterung wendet kleine Änderungen an, um die Integration mit der Weboberfläche zu ermöglichen
 
-## License
-
-This project respects the original PlantUML license and maintains compatibility with the GPL ecosystem.
+Dieses Projekt respektiert die ursprüngliche PlantUML-Lizenz und behält die Kompatibilität mit dem GPL-Ökosystem.
 
 ---
 
-**Built with ❤️ and absolutely vibe coded.** ✨
+**Gebaut mit ❤️ und absolut vibe-coded.** ✨
