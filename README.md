@@ -82,7 +82,7 @@ MyPlantUMLGanttExtension/
 Dieses Projekt verwendet **PlantUML** für die Diagrammrenderei:
 - **PlantUML Projekt:** [plantuml.com](https://plantuml.com)
 - PlantUML wird unter der **GPL v3 Lizenz** veröffentlicht
-- Diese Erweiterung wendet kleine Änderungen an, um die Integration mit der Weboberfläche zu ermöglichen
+- Diese Erweiterung wendet kleine Änderungen an, um die Integration mit der Weboberfläche zu ermöglichen (maximum render size set to 16384)
 
 Dieses Projekt respektiert die ursprüngliche PlantUML-Lizenz und behält die Kompatibilität mit dem GPL-Ökosystem.
 
