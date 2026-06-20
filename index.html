@@ -80,9 +80,8 @@
         select:focus {
             outline: 1px solid #2563eb;
         }
-        
-        table input
-        {
+
+        table input {
             min-width: 90%;
             font-size: large;
         }
@@ -272,16 +271,23 @@
     <div id="Out"></div>
 
     <footer>
-        <button onclick="ExportSvg()">System-Export (.SVG)</button>
-        <button onclick="ExportTable()">Daten kopieren (Zwischenablage)</button>
-        <button onclick="ImportTable()">Daten einfügen (Aus Zwischenablage)</button>
+        <button onclick="ExportSvg()">▭ Export (.SVG)</button>
+        <button onclick="ExportTable()">⬇ Daten kopieren (Zwischenablage)</button>
+        <button onclick="ImportTable()">⬆ Daten einfügen (Aus Zwischenablage)</button>
+        <button onclick="ClearProject()" style="background:#991b1b; border-color:#7f1d1d; color:white;">
+            🗑️ Projekt löschen
+        </button>
 
         <div style="margin-left:auto; color:#94a3b8; font-size:11px; display:flex; align-items:center; gap:6px;">
-            <span><a style="color: lightblue;" href="https://plantuml.com">© PlantUML used for rendering</a>; with minor modifications</span>
-       
-            <a href="https://github.com/TheBarnyOfBarnim/MyPlantUMLGanttExtension" target="_blank" class="icon" title="Visit PlantUML on GitHub">
+            <span><a style="color: lightblue;" href="https://plantuml.com">© PlantUML used for rendering</a>; with minor
+                modifications</span>
+
+            <a href="https://github.com/TheBarnyOfBarnim/MyPlantUMLGanttExtension" target="_blank" class="icon"
+                title="Visit PlantUML on GitHub">
                 <svg viewBox="0 0 24 24" fill="white" style="width: 24px; height: 24px">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    <path
+                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z">
+                    </path>
                 </svg>
             </a>
         </div>
@@ -311,6 +317,16 @@
             lines.push(["Feiertage", feiertage].join("\t"));
             lines.push("");
 
+            // header line
+            lines.push([
+                "Name",
+                "Start",
+                "Ende",
+                "Abhängigkeit",
+                "Farbe",
+                "Meilenstein"
+            ].join("\t"));
+
             rows.forEach(r =>
             {
                 const name = r.querySelector(".Name").value || "";
@@ -319,6 +335,7 @@
                 const dependsOn = r.querySelector(".DependsOn").value || "";
                 const color = r.querySelector(".Color").value || "";
                 const isMilestone = r.querySelector(".IsMilestone").checked;
+
                 const milestoneText = isMilestone ? "Meilenstein" : "";
 
                 lines.push([name, start, end, dependsOn, color, milestoneText].join("\t"));
@@ -330,46 +347,126 @@
 
         async function ImportTable()
         {
-            const text = await navigator.clipboard.readText();
-            if (!text) return;
-
-            const lines = text.split(/\r\n|\n|\r/).filter(x => x.trim().length > 0);
-            document.getElementById("Tasks").innerHTML = "";
-
-            lines.forEach(line =>
+            try
             {
-                const cols = line.split("\t");
+                const text = await navigator.clipboard.readText();
 
-                if (cols[0] === "Titel")
+                if (!text)
                 {
-                    document.getElementById("Titel").value = cols[1] || "";
-                    return;
-                }
-                if (cols[0] === "ProjektStart")
-                {
-                    document.getElementById("ProjektStart").value = ToIsoDate(cols[1] || "");
-                    return;
-                }
-                if (cols[0] === "Feiertage")
-                {
-                    document.getElementById("Feiertage").value = cols[1] || "";
+                    alert("Die Zwischenablage ist leer.");
                     return;
                 }
 
-                if (cols.length >= 6)
-                {
-                    const name = cols[0];
-                    const startIso = ToIsoDate(cols[1]);
-                    const endIso = ToIsoDate(cols[2]);
-                    const dependsOn = cols[3];
-                    const color = cols[4];
-                    const isMilestone = cols[5] === "Meilenstein";
+                const lines = text
+                    .split(/\r\n|\n|\r/)
+                    .filter(line => line.trim() !== "");
 
-                    AddRow(name, startIso, endIso, color, isMilestone, dependsOn);
+                document.getElementById("Tasks").innerHTML = "";
+
+                const fehler = [];
+
+                lines.forEach((line, index) =>
+                {
+                    try
+                    {
+                        const cols = line.split("\t");
+
+                        if (cols.every(c => c.trim() === ""))
+                            return;
+
+                        if (cols[0] === "Titel")
+                        {
+                            document.getElementById("Titel").value = cols[1] || "";
+                            return;
+                        }
+
+                        if (cols[0] === "ProjektStart")
+                        {
+                            document.getElementById("ProjektStart").value = ToIsoDate(cols[1] || "");
+                            return;
+                        }
+
+                        if (cols[0] === "Feiertage")
+                        {
+                            document.getElementById("Feiertage").value = cols[1] || "";
+                            return;
+                        }
+
+                        // skip header line
+                        if (cols[0] === "Name" && cols[1] === "Start")
+                        {
+                            return;
+                        }
+
+                        // atleast Name must exist
+                        const name = cols[0]?.trim();
+
+                        if (!name)
+                        {
+                            fehler.push(`Zeile ${index + 1}: Kein Name angegeben.`);
+                            return;
+                        }
+
+                        const startIso = cols[1] ? ToIsoDate(cols[1]) : "";
+                        const endIso = cols[2] ? ToIsoDate(cols[2]) : "";
+                        const dependsOn = cols[3] || "";
+                        const color = cols[4] || "";
+                        const isMilestone = cols[5] === "Meilenstein";
+
+                        AddRow(
+                            name,
+                            startIso,
+                            endIso,
+                            color,
+                            isMilestone,
+                            dependsOn);
+                    }
+                    catch
+                    {
+                        fehler.push(`Zeile ${index + 1} konnte nicht eingelesen werden.`);
+                    }
+                });
+
+                Update();
+
+                if (fehler.length > 0)
+                {
+                    alert(
+                        "Beim Import sind Fehler aufgetreten:\n\n" +
+                        fehler.join("\n"));
                 }
-            });
+            }
+            catch
+            {
+                alert("Die Daten aus der Zwischenablage konnten nicht gelesen werden.");
+            }
+        }
+
+
+        function ClearProject()
+        {
+            if (!confirm("Projekt wirklich vollständig löschen?"))
+            {
+                return;
+            }
+
+            localStorage.removeItem(StorageKey);
+
+            document.getElementById("Titel").value = "Projektplan";
+            document.getElementById("ProjektStart").value = "";
+            document.getElementById("Feiertage").value = "";
+            document.getElementById("Scale").value = "daily2";
+            document.getElementById("HideWeekends").checked = true;
+            document.getElementById("ShowToday").checked = false;
+
+            Tasks.innerHTML = "";
+            AddRow();
+
             Update();
         }
+
+        window.ClearProject = ClearProject;
+
         window.ExportTable = ExportTable;
         window.ImportTable = ImportTable;
 
@@ -651,8 +748,8 @@ language de
                 index++;
 
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", x + width/2);
-                text.setAttribute("y", topY+10);
+                text.setAttribute("x", x + width / 2);
+                text.setAttribute("y", topY + 10);
                 text.setAttribute("font-size", "10");
                 text.setAttribute("font-weight", "bold");
                 text.setAttribute("font-family", "Arial, sans-serif");
@@ -695,8 +792,9 @@ language de
             const uml = BuildUml();
             Uml.value = uml;
 
-            renderToString(uml.split(/\r\n|\r|\n/), (svg) => {
-                
+            renderToString(uml.split(/\r\n|\r|\n/), (svg) =>
+            {
+
                 document.getElementById("Out").innerHTML = svg;
 
                 const scale = document.getElementById("Scale").value;
@@ -705,12 +803,13 @@ language de
                     InjectWeekNumbersBackgroundBands();
                     InjectMoveMonthLabelsUp();
                 }
-                
+
             },
-            (error) => {
-                document.getElementById("Out").innerHTML = error;
-            });
-            
+                (error) =>
+                {
+                    document.getElementById("Out").innerHTML = error;
+                });
+
         }
 
         /* ---------------- STATE RETENTION & PERSISTENCE ---------------- */
@@ -722,7 +821,7 @@ language de
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "Gantt_Kernsystem_Plan.svg";
+            a.download = "Gantt_Plan.svg";
             a.click();
             URL.revokeObjectURL(url);
         }
