@@ -185,31 +185,6 @@
             background: #475569;
             border-color: #64748b;
         }
-
-        .help-links {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 11px;
-        }
-
-        .help-links a {
-            color: #2563eb;
-            text-decoration: none;
-            display: inline-block;
-            margin-right: 12px;
-            line-height: 1.6;
-        }
-
-        .help-links a:hover {
-            text-decoration: underline;
-        }
-
-        #StylePanel {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
     </style>
 </head>
 
@@ -283,20 +258,11 @@
                 hinzufügen</button>
         </div>
 
-        <div class="panel" id="StylePanel">
+        <div class="panel" style="display:flex; flex-direction:column;">
             <h3 class="panel-title">Generierter PlantUML Quelltext</h3>
             <textarea id="Uml"
-                style="flex:1; font-family: monospace; font-size: 11px; background: #f8fafc; color: #334155; margin-bottom: 10px;"
-                readonly></textarea>
-
-            <h3 class="panel-title">Custom PlantUML Style/Text</h3>
-            <textarea id="CustomStyle"
                 style="flex:1; font-family: monospace; font-size: 11px; background: #f8fafc; color: #334155;"
-                placeholder="z.B.:&#10;skinparam backgroundColor #ffffff&#10;hide footbox&#10;or any gantt-specific directives..."></textarea>
-            <div class="help-links">
-                <a href="https://plantuml.com/de/gantt-diagram" target="_blank" title="Öffnet PlantUML Gantt-Diagramm Dokumentation">📖 Gantt-Diagramm</a>
-                <a href="https://plantuml.com/de/skinparam" target="_blank" title="Öffnet PlantUML Skinparam Dokumentation">📖 Skinparam</a>
-            </div>
+                readonly></textarea>
         </div>
 
     </div>
@@ -320,7 +286,7 @@
                 title="Visit PlantUML on GitHub">
                 <svg viewBox="0 0 24 24" fill="white" style="width: 24px; height: 24px">
                     <path
-                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.080[...]
+                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z">
                     </path>
                 </svg>
             </a>
@@ -333,7 +299,6 @@
 
         const Tasks = document.getElementById("Tasks");
         const Uml = document.getElementById("Uml");
-        const CustomStyle = document.getElementById("CustomStyle");
         const StorageKey = "GanttSTORAGE";
 
         /* ---------------- EXPORT & IMPORT UTILITIES ---------------- */
@@ -493,7 +458,6 @@
             document.getElementById("Scale").value = "daily2";
             document.getElementById("HideWeekends").checked = true;
             document.getElementById("ShowToday").checked = false;
-            document.getElementById("CustomStyle").value = "";
 
             Tasks.innerHTML = "";
             AddRow();
@@ -615,7 +579,6 @@
             const scale = document.getElementById("Scale").value;
             const hideWeekends = document.getElementById("HideWeekends").checked;
             const showToday = document.getElementById("ShowToday").checked;
-            const customStyle = document.getElementById("CustomStyle").value.trim();
 
             if (!startInput) return "@startgantt\n@endgantt";
 
@@ -667,12 +630,6 @@ language de
             {
                 const todayStr = new Date().toISOString().split('T')[0];
                 uml += `${todayStr} is colored in #efe94455\n`;
-            }
-
-            // Add custom style/text if provided
-            if (customStyle)
-            {
-                uml += "\n" + customStyle + "\n";
             }
 
             uml += `\ntitle ${title}\nProject starts ${startInput}\n\n`;
@@ -888,7 +845,6 @@ language de
                 Scale: document.getElementById("Scale").value,
                 HideWeekends: document.getElementById("HideWeekends").checked,
                 ShowToday: document.getElementById("ShowToday").checked,
-                CustomStyle: document.getElementById("CustomStyle").value,
                 Tasks: tasks
             };
 
@@ -904,7 +860,6 @@ language de
             document.getElementById("Titel").value = s.Titel || "";
             document.getElementById("ProjektStart").value = s.ProjektStart || "";
             document.getElementById("Feiertage").value = s.Feiertage || "";
-            document.getElementById("CustomStyle").value = s.CustomStyle || "";
             if (s.Scale) document.getElementById("Scale").value = s.Scale;
             if (s.HideWeekends !== undefined) document.getElementById("HideWeekends").checked = s.HideWeekends;
             if (s.ShowToday !== undefined) document.getElementById("ShowToday").checked = s.ShowToday;
