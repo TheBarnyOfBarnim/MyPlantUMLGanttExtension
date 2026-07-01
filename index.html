@@ -152,6 +152,30 @@
             font-size: 11px;
         }
 
+        /* Drag and Drop Styling */
+        .drag-handle {
+            cursor: grab;
+            color: #94a3b8;
+            font-size: 14px;
+            text-align: center;
+            user-select: none;
+            padding: 4px;
+        }
+
+        .drag-handle:hover {
+            color: #334155;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        tr.dragging {
+            opacity: 0.5;
+            background-color: #e2e8f0;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
         #Out {
             background: #ffffff;
             border: 1px solid #cbd5e1;
@@ -200,22 +224,22 @@
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
                 <div class="form-group">
                     <label>Projekttitel</label>
-                    <input id="Titel" value="Projektplan" />
+                    <input id="Titel" value="Projektplan" oninput="Update()" />
                 </div>
                 <div class="form-group">
                     <label>Projektstart</label>
-                    <input type="date" id="ProjektStart" />
+                    <input type="date" id="ProjektStart" onchange="Update()" />
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Feiertage / Schließtage (dd.mm.yyyy, Komma-getrennt)</label>
-                <input id="Feiertage" placeholder="01.01.2026, 01.05.2026, 25.12.2026" />
+                <input id="Feiertage" placeholder="01.01.2026, 01.05.2026, 25.12.2026" oninput="Update()" />
             </div>
 
             <div class="form-group">
                 <label>Benutzerdefinierter PlantUML / Style</label>
-                <textarea id="CustomUmlStyle" placeholder="z.Bsp.
+                <textarea id="CustomUmlStyle" oninput="Update()" placeholder="z.Bsp.
 skinparam ArrowColor red
 skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
 
@@ -229,7 +253,7 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
                 style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; margin-top: 12px; display: flex; flex-wrap: wrap; gap: 15px;">
                 <div class="form-group" style="margin: 0;">
                     <label>Diagramm-Skalierung</label>
-                    <select id="Scale" style="width: 150px;">
+                    <select id="Scale" style="width: 150px;" onchange="Update()">
                         <option value="daily1">Täglich (Kompakt)</option>
                         <option value="daily2" selected>Täglich (Standard)</option>
                         <option value="daily4">Täglich (Detailliert)</option>
@@ -239,12 +263,18 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
                 </div>
                 <div style="display: flex; align-items: flex-end; padding-bottom: 2px;">
                     <div class="checkbox-group">
-                        <input type="checkbox" id="HideWeekends" checked>
+                        <input type="checkbox" id="HideWeekends" checked onchange="Update()">
                         <label for="HideWeekends" style="display:inline; cursor:pointer;">Wochenenden schließen</label>
                     </div>
                     <div class="checkbox-group">
-                        <input type="checkbox" id="ShowToday">
+                        <input type="checkbox" id="ShowToday" onchange="Update()">
                         <label for="ShowToday" style="display:inline; cursor:pointer;">Heute-Linie anzeigen</label>
+                    </div>
+                    <div class="checkbox-group" style="border-left: 1px solid #cbd5e1; padding-left: 15px;">
+                        <input type="checkbox" id="HighlightCriticalPath" onchange="Update()">
+                        <label for="HighlightCriticalPath"
+                            style="display:inline; cursor:pointer; font-weight:bold; color:#b91c1c;">Kritischen Pfad
+                            markieren</label>
                     </div>
                 </div>
             </div>
@@ -253,6 +283,7 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
                 <table>
                     <thead>
                         <tr>
+                            <th style="width: 25px;"></th>
                             <th>Aufgabenbezeichnung</th>
                             <th style="width: 95px;">Startdatum</th>
                             <th style="width: 95px;">Enddatum</th>
@@ -293,7 +324,6 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
         <div style="margin-left:auto; color:#94a3b8; font-size:11px; display:flex; align-items:center; gap:6px;">
             <span><a style="color: lightblue;" href="https://plantuml.com">© PlantUML used for rendering</a>; with minor
                 modifications</span>
-
             <a href="https://github.com/TheBarnyOfBarnim/MyPlantUMLGanttExtension" target="_blank" class="icon"
                 title="Visit PlantUML on GitHub">
                 <svg viewBox="0 0 24 24" fill="white" style="width: 24px; height: 24px">
@@ -303,7 +333,6 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
                 </svg>
             </a>
         </div>
-
     </footer>
 
     <script type="module">
@@ -312,6 +341,60 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
         const Tasks = document.getElementById("Tasks");
         const Uml = document.getElementById("Uml");
         const StorageKey = "GanttSTORAGE";
+
+        /* ---------------- DRAG & DROP INITIALIZATION ---------------- */
+
+        let draggedRow = null;
+
+        Tasks.addEventListener('mousedown', function (e)
+        {
+            if (e.target.classList.contains('drag-handle'))
+            {
+                e.target.closest('tr').draggable = true;
+            }
+        });
+
+        Tasks.addEventListener('mouseup', function (e)
+        {
+            if (e.target.classList.contains('drag-handle'))
+            {
+                const tr = e.target.closest('tr');
+                if (tr) tr.draggable = false;
+            }
+        });
+
+        Tasks.addEventListener('dragstart', function (e)
+        {
+            draggedRow = e.target.closest('tr');
+            if (draggedRow)
+            {
+                setTimeout(() => draggedRow.classList.add('dragging'), 0);
+            }
+        });
+
+        Tasks.addEventListener('dragover', function (e)
+        {
+            e.preventDefault();
+            const targetRow = e.target.closest('tr');
+            if (targetRow && targetRow !== draggedRow && draggedRow)
+            {
+                const rect = targetRow.getBoundingClientRect();
+                const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                Tasks.insertBefore(draggedRow, next ? targetRow.nextSibling : targetRow);
+            }
+        });
+
+        Tasks.addEventListener('dragend', function (e)
+        {
+            if (draggedRow)
+            {
+                draggedRow.classList.remove('dragging');
+                draggedRow.draggable = false;
+                draggedRow = null;
+                Update(); // Projekt nach Sortierung neu aufbauen
+            }
+        });
+
 
         /* ---------------- EXPORT & IMPORT UTILITIES ---------------- */
 
@@ -383,8 +466,7 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
                     {
                         const cols = line.split("\t");
 
-                        if (cols.every(c => c.trim() === ""))
-                            return;
+                        if (cols.every(c => c.trim() === "")) return;
 
                         if (cols[0] === "Titel")
                         {
@@ -410,7 +492,6 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
                             return;
                         }
 
-                        // atleast Name must exist
                         const name = cols[0]?.trim();
 
                         if (!name)
@@ -425,13 +506,7 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
                         const color = cols[4] || "";
                         const isMilestone = cols[5] === "Meilenstein";
 
-                        AddRow(
-                            name,
-                            startIso,
-                            endIso,
-                            color,
-                            isMilestone,
-                            dependsOn);
+                        AddRow(name, startIso, endIso, color, isMilestone, dependsOn);
                     }
                     catch
                     {
@@ -443,9 +518,7 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
 
                 if (fehler.length > 0)
                 {
-                    alert(
-                        "Beim Import sind Fehler aufgetreten:\n\n" +
-                        fehler.join("\n"));
+                    alert("Beim Import sind Fehler aufgetreten:\n\n" + fehler.join("\n"));
                 }
             }
             catch
@@ -454,13 +527,9 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
             }
         }
 
-
         function ClearProject()
         {
-            if (!confirm("Projekt wirklich vollständig löschen?"))
-            {
-                return;
-            }
+            if (!confirm("Projekt wirklich vollständig löschen?")) return;
 
             localStorage.removeItem(StorageKey);
 
@@ -470,6 +539,8 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
             document.getElementById("Scale").value = "daily2";
             document.getElementById("HideWeekends").checked = true;
             document.getElementById("ShowToday").checked = false;
+            document.getElementById("HighlightCriticalPath").checked = false;
+            document.getElementById("CustomUmlStyle").value = "";
 
             Tasks.innerHTML = "";
             AddRow();
@@ -478,7 +549,6 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
         }
 
         window.ClearProject = ClearProject;
-
         window.ExportTable = ExportTable;
         window.ImportTable = ImportTable;
 
@@ -543,11 +613,12 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
             const tr = document.createElement("tr");
 
             tr.innerHTML = `
-        <td><input class="Name" value="${name}" placeholder="z.B. Task A"></td>
-        <td><input class="Start" type="date" value="${start}"></td>
-        <td><input class="End" type="date" value="${end}" ${isMilestone ? "disabled style='background:#e2e8f0;'" : ""}></td>
-        <td><input class="DependsOn" value="${dependsOn}" placeholder="Vorgänger-Task"></td>
-        <td style="text-align:center;"><input class="Color" type="color" value="${color}" style="width:28px;height:20px;padding:0;border:0;cursor:pointer;"></td>
+        <td class="drag-handle" title="Zeile ziehen zum Verschieben">☰</td>
+        <td><input class="Name" value="${name}" placeholder="z.B. Task A" oninput="Update()"></td>
+        <td><input class="Start" type="date" value="${start}" onchange="Update()"></td>
+        <td><input class="End" type="date" value="${end}" ${isMilestone ? "disabled style='background:#e2e8f0;'" : ""} onchange="Update()"></td>
+        <td><input class="DependsOn" value="${dependsOn}" placeholder="Vorgänger-Task" oninput="Update()"></td>
+        <td style="text-align:center;"><input class="Color" type="color" value="${color}" style="width:28px;height:20px;padding:0;border:0;cursor:pointer;" onchange="Update()"></td>
         <td style="text-align:center;">
             <input type="checkbox" class="IsMilestone" ${isMilestone ? "checked" : ""} onchange="ToggleMilestone(this); Update()">
         </td>
@@ -566,6 +637,7 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
     `;
             Tasks.appendChild(tr);
         }
+        window.AddRow = AddRow;
 
         /* ---------------- COMPILER ENGINE (UML BUILDER) ---------------- */
 
@@ -591,6 +663,7 @@ skinparam defaultFontSize 36" style="min-height: 80px;"></textarea>
             const scale = document.getElementById("Scale").value;
             const hideWeekends = document.getElementById("HideWeekends").checked;
             const showToday = document.getElementById("ShowToday").checked;
+            const highlightCriticalPath = document.getElementById("HighlightCriticalPath").checked;
 
             if (!startInput) return "@startgantt\n@endgantt";
 
@@ -622,7 +695,6 @@ language de
 `;
 
             const customUmlStyle = document.getElementById("CustomUmlStyle").value || "";
-
             if (customUmlStyle.trim())
             {
                 uml += "\n' --- Custom Style Start ---\n";
@@ -641,7 +713,6 @@ language de
                 uml += "saturday are closed\nsunday are closed\n";
             }
 
-
             Holidays().forEach(h =>
             {
                 uml += h + " is closed\n";
@@ -655,16 +726,110 @@ language de
 
             uml += `\ntitle ${title}\nProject starts ${startInput}\n\n`;
 
-            const rows = document.querySelectorAll("#Tasks tr");
+            const rows = Array.from(document.querySelectorAll("#Tasks tr"));
 
-            rows.forEach(r =>
+            // --- Logik zur Ermittlung des Kritischen Pfades ---
+            let tasksObj = {};
+            let criticalTasks = new Set();
+
+            if (highlightCriticalPath)
             {
-                const name = r.querySelector(".Name").value || "Unbenannt";
+                rows.forEach((r, idx) =>
+                {
+                    let name = r.querySelector(".Name").value.trim() || ("Task_" + idx);
+                    let dependsOn = r.querySelector(".DependsOn").value.trim();
+                    let start = r.querySelector(".Start").value;
+                    let end = r.querySelector(".End").value;
+                    let isMilestone = r.querySelector(".IsMilestone").checked;
+
+                    let duration = 1;
+                    if (start && end)
+                    {
+                        let sD = new Date(start);
+                        let eD = new Date(end);
+                        if (!isNaN(sD) && !isNaN(eD)) duration = Math.max(1, (eD - sD) / 86400000);
+                    } else if (isMilestone)
+                    {
+                        duration = 0;
+                    }
+
+                    tasksObj[name] = {
+                        name: name,
+                        dependsOn: dependsOn,
+                        duration: duration,
+                        earlyFinish: 0
+                    };
+                });
+
+                // Early Finish berechnen
+                let changed = true;
+                let maxIter = 1000;
+                while (changed && maxIter > 0)
+                {
+                    changed = false;
+                    maxIter--;
+                    for (let key in tasksObj)
+                    {
+                        let t = tasksObj[key];
+                        let ef = t.duration;
+                        if (t.dependsOn && tasksObj[t.dependsOn])
+                        {
+                            ef = tasksObj[t.dependsOn].earlyFinish + t.duration;
+                        }
+                        if (ef > t.earlyFinish)
+                        {
+                            t.earlyFinish = ef;
+                            changed = true;
+                        }
+                    }
+                }
+
+                // Max EF ermitteln (Projektende)
+                let maxEF = 0;
+                for (let key in tasksObj)
+                {
+                    if (tasksObj[key].earlyFinish > maxEF) maxEF = tasksObj[key].earlyFinish;
+                }
+
+                // Kritischen Pfad zurückverfolgen
+                for (let key in tasksObj)
+                {
+                    if (tasksObj[key].earlyFinish === maxEF)
+                    {
+                        let curr = tasksObj[key];
+                        while (curr)
+                        {
+                            criticalTasks.add(curr.name);
+                            if (curr.dependsOn && tasksObj[curr.dependsOn])
+                            {
+                                curr = tasksObj[curr.dependsOn];
+                            } else
+                            {
+                                curr = null;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- UML Zeilen-Generator ---
+            rows.forEach((r, idx) =>
+            {
+                const nameStr = r.querySelector(".Name").value;
+                const name = nameStr.trim() || ("Task_" + idx);
                 const isMilestone = r.querySelector(".IsMilestone").checked;
                 const start = r.querySelector(".Start").value;
                 const end = r.querySelector(".End").value;
                 const dependsOn = r.querySelector(".DependsOn").value.trim();
-                const color = r.querySelector(".Color").value || "#3b82f6";
+
+                let color = r.querySelector(".Color").value || "#3b82f6";
+
+                // Kritischen Pfad farblich überschreiben
+                const isCrit = highlightCriticalPath && criticalTasks.has(name);
+                if (isCrit)
+                {
+                    color = "#dc2626"; // Rot für kritischen Pfad
+                }
 
                 if (isMilestone)
                 {
@@ -684,10 +849,10 @@ language de
                         if (end) syntax += ` and ends ${end}`;
                     } else
                     {
-                        if (!start || !end) return;
+                        if (!start || !end) return; // Unvollständiger Task
                         syntax = `starts ${start} and ends ${end}`;
                     }
-                    uml += `[${name}] ${syntax} and is colored in ${color}\n`;
+                    uml += `[${nameStr || name}] ${syntax} and is colored in ${color}\n`;
                 }
             });
 
@@ -728,7 +893,6 @@ language de
             const height = maxY - topY;
 
             const columns = verticalLines.slice(5).map(l => parseFloat(l.getAttribute("x1")));
-
             const weekMap = new Map();
 
             for (let i = 0; i < columns.length - 1; i++)
@@ -794,11 +958,9 @@ language de
             TextElements.forEach(function (TextElement)
             {
                 const TextContent = TextElement.textContent || "";
-
                 if (MonthRegex.test(TextContent))
                 {
                     const CurrentY = parseFloat(TextElement.getAttribute("y"));
-
                     if (!isNaN(CurrentY))
                     {
                         TextElement.setAttribute("y", (CurrentY - 10).toString());
@@ -807,7 +969,7 @@ language de
             });
         }
 
-        function Update()
+        window.Update = function Update()
         {
             Save();
             const uml = BuildUml();
@@ -815,7 +977,6 @@ language de
 
             renderToString(uml.split(/\r\n|\r|\n/), (svg) =>
             {
-
                 document.getElementById("Out").innerHTML = svg;
 
                 const scale = document.getElementById("Scale").value;
@@ -824,13 +985,11 @@ language de
                     InjectWeekNumbersBackgroundBands();
                     InjectMoveMonthLabelsUp();
                 }
-
             },
                 (error) =>
                 {
                     document.getElementById("Out").innerHTML = error;
                 });
-
         }
 
         /* ---------------- STATE RETENTION & PERSISTENCE ---------------- */
@@ -846,6 +1005,7 @@ language de
             a.click();
             URL.revokeObjectURL(url);
         }
+        window.ExportSvg = ExportSvg;
 
         function Save()
         {
@@ -859,14 +1019,14 @@ language de
                 IsMilestone: r.querySelector(".IsMilestone").checked
             }));
 
-            const state =
-            {
+            const state = {
                 Titel: document.getElementById("Titel").value,
                 ProjektStart: document.getElementById("ProjektStart").value,
                 Feiertage: document.getElementById("Feiertage").value,
                 Scale: document.getElementById("Scale").value,
                 HideWeekends: document.getElementById("HideWeekends").checked,
                 ShowToday: document.getElementById("ShowToday").checked,
+                HighlightCriticalPath: document.getElementById("HighlightCriticalPath").checked,
                 CustomUmlStyle: document.getElementById("CustomUmlStyle").value,
                 Tasks: tasks
             };
@@ -877,47 +1037,42 @@ language de
         function Load()
         {
             const raw = localStorage.getItem(StorageKey);
-            if (!raw) return;
+            if (!raw)
+            {
+                AddRow();
+                return;
+            }
 
             const s = JSON.parse(raw);
             document.getElementById("Titel").value = s.Titel || "";
             document.getElementById("ProjektStart").value = s.ProjektStart || "";
             document.getElementById("Feiertage").value = s.Feiertage || "";
+
             if (s.Scale) document.getElementById("Scale").value = s.Scale;
             if (s.HideWeekends !== undefined) document.getElementById("HideWeekends").checked = s.HideWeekends;
             if (s.ShowToday !== undefined) document.getElementById("ShowToday").checked = s.ShowToday;
+            if (s.HighlightCriticalPath !== undefined) document.getElementById("HighlightCriticalPath").checked = s.HighlightCriticalPath;
             if (s.CustomUmlStyle !== undefined) document.getElementById("CustomUmlStyle").value = s.CustomUmlStyle;
 
             Tasks.innerHTML = "";
-
-            (s.Tasks || []).forEach(t =>
+            if (s.Tasks && s.Tasks.length > 0)
             {
-                AddRow(t.Name, t.Start, t.End, t.Color, t.IsMilestone, t.DependsOn || "");
-            });
+                s.Tasks.forEach(t =>
+                {
+                    AddRow(t.Name, t.Start, t.End, t.Color, t.IsMilestone, t.DependsOn);
+                });
+            } else
+            {
+                AddRow();
+            }
 
+            Update();
         }
 
-        /* ---------------- CORE ENGINE RUNTIME INITIALIZER ---------------- */
-
-        window.AddRow = AddRow;
-        window.Update = Update;
-        window.ExportSvg = ExportSvg;
-
-        document.addEventListener("input", Update);
-        document.addEventListener("change", Update);
-
+        // Init App
         Load();
 
-        if (Tasks.children.length === 0)
-        {
-            AddRow();
-        }
-
-        Update();
     </script>
-
-    <script src="viz-global.js"></script>
-
 </body>
 
 </html>
